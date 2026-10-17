@@ -1,0 +1,62 @@
+# Mesa Financiera en la nube: funciona con tu computadora apagada.
+#  · Cada 10 minutos revisa si escribiste /analiza TICKER en Telegram y responde.
+#  · También puedes lanzarlo a mano (incluso desde la app de GitHub en tu celular):
+#    Actions → mesa-financiera → Run workflow → escribe el ticker.
+name: mesa-financiera
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"          # hora UTC; GitHub puede retrasar unos minutos las ejecuciones
+  workflow_dispatch:
+    inputs:
+      ticker:
+        description: "Ticker a analizar (déjalo vacío para solo revisar Telegram)"
+        required: false
+        default: "AAPL"
+      simulacion:
+        description: "Modo simulación (sin gastar llaves)"
+        type: boolean
+        default: false
+
+concurrency:                        # evita dos ejecuciones al mismo tiempo
+  group: mesa-financiera
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  mesa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      ALPHAVANTAGE_API_KEY: ${{ secrets.ALPHAVANTAGE_API_KEY }}
+      MODO_SIMULACION: ${{ inputs.simulacion && '1' || '0' }}
+      TICKER: ${{ inputs.ticker }}  # se pasa como variable, nunca se pega dentro del comando
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Analizar el ticker indicado a mano
+        if: github.event_name == 'workflow_dispatch' && env.TICKER != ''
+        run: python analizar.py "$TICKER" --telegram
+
+      - name: Revisar mensajes pendientes en Telegram
+        run: python revisar_telegram.py
+
+      - name: Guardar evidencias
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: evidencias-${{ github.run_number }}
+          path: salidas/
+          if-no-files-found: ignore
+          retention-days: 14

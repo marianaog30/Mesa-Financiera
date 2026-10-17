@@ -1,0 +1,21 @@
+{
+  "name": "Mesa Financiera en Telegram",
+  "image": "mcr.microsoft.com/devcontainers/python:3.12",
+  "customizations": {
+    "vscode": {
+      "extensions": ["ms-python.python", "ms-toolsai.jupyter"],
+      "settings": { "python.testing.pytestEnabled": true }
+    },
+    "codespaces": {
+      "openFiles": ["README.md"]
+    }
+  },
+  "secrets": {
+    "TELEGRAM_BOT_TOKEN": { "description": "Token de tu bot, lo entrega @BotFather en Telegram" },
+    "TELEGRAM_CHAT_ID": { "description": "Tu chat_id; obténlo con: python obtener_chat_id.py" },
+    "ANTHROPIC_API_KEY": { "description": "Llave de la API de Claude (la entrega la docente)" },
+    "ALPHAVANTAGE_API_KEY": { "description": "Llave gratuita de alphavantage.co/support/#api-key" }
+  },
+  "postCreateCommand": "pip install --user -r requirements.txt pytest && pytest -q",
+  "postAttachCommand": "python verificar_configuracion.py; echo; echo 'Siguiente paso: python analizar.py AAPL --simulacion'"
+}
