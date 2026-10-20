@@ -1,4 +1,4 @@
-"""Revisión única de mensajes pendientes. Lo ejecuta GitHub Actions cada 10 minutos.
+"""Revisión única de mensajes pendientes. Lo ejecuta GitHub Actions cada 8 minutos.
 
 No necesita tu computadora encendida: lee los /analiza que escribiste en Telegram,
 corre la cadena de agentes para cada uno, responde y termina.
@@ -13,7 +13,7 @@ from mesa.telegram_io import confirmar_leidos, obtener_mensajes, preparar_pollin
 def main():
     print("Configuración:", config.resumen())
     if not config.TELEGRAM_BOT_TOKEN:
-        # Copia de la plantilla sin Secrets: terminar en verde, sin correos de error cada 10 minutos.
+        # Copia de la plantilla sin Secrets: terminar en verde, sin correos de error cada 8 minutos.
         print("ℹ️ Sin TELEGRAM_BOT_TOKEN: nada que revisar. Agrega tus Secrets para activar el bot.")
         return
     try:

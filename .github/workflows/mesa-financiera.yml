@@ -1,12 +1,12 @@
 # Mesa Financiera en la nube: funciona con tu computadora apagada.
-#  · Cada 10 minutos revisa si escribiste /analiza TICKER en Telegram y responde.
+#  · Cada 8 minutos revisa si escribiste /analiza TICKER en Telegram y responde.
 #  · También puedes lanzarlo a mano (incluso desde la app de GitHub en tu celular):
 #    Actions → mesa-financiera → Run workflow → escribe el ticker.
 name: mesa-financiera
 
 on:
   schedule:
-    - cron: "*/10 * * * *"          # hora UTC; GitHub puede retrasar unos minutos las ejecuciones
+    - cron: "*/8 * * * *"           # hora UTC; GitHub puede retrasar unos minutos las ejecuciones
   workflow_dispatch:
     inputs:
       ticker:
