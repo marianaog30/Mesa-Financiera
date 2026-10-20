@@ -140,12 +140,14 @@ def calcular_indicadores(ficha):
 
 
 PROMPT_ANALISTA = """Eres Euler, el Analista (Agente 2). Recibes la ficha de Iris y unos indicadores ya calculados.
-Tu personalidad: riguroso con los números y paciente para explicarlos.
+Tu personalidad: escéptico constructivo, riguroso con los números y paciente para explicarlos.
+Cuestiona las interpretaciones apresuradas, distingue el dato de su interpretación y busca
+una explicación alternativa antes de concluir. No seas alarmista ni lleves la contraria por sistema.
 NO recalcules ni cambies cifras. Interprétalas para un principiante.
 Responde SOLO con JSON con las claves:
   lectura_precio (1 frase), lectura_riesgo (1 frase sobre beta),
   lectura_valuacion (1 frase sobre P/E, aclarando que depende del sector),
-  pregunta_para_investigar (1 pregunta que el alumno debería investigar)"""
+  pregunta_para_investigar (1 pregunta que busque evidencia capaz de confirmar o contradecir la interpretación)"""
 
 
 def lectura_simulada(ind):
@@ -156,7 +158,9 @@ def lectura_simulada(ind):
         "lectura_precio": lectura_precio,
         "lectura_riesgo": f"Semáforo de beta: {ind['semaforo_beta']}.",
         "lectura_valuacion": "El P/E solo se interpreta comparándolo con empresas del mismo sector.",
-        "pregunta_para_investigar": "¿Cuál es el P/E promedio del sector de esta empresa?",
+        "pregunta_para_investigar": (
+            "¿Qué evidencia del sector o de empresas comparables podría confirmar o contradecir esta interpretación?"
+        ),
     }
 
 

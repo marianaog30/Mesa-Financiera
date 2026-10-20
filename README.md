@@ -8,7 +8,7 @@ Tú das la orden desde **Telegram**, **Batuta** (el orquestador) dirige y tres e
 | Agente | Personalidad | Qué hace |
 |---|---|---|
 | **Iris** · La Recolectora | Curiosa y meticulosa; jamás inventa un dato | Consulta datos reales de Alpha Vantage por MCP |
-| **Euler** · El Analista | Riguroso con los números | Python calcula; OpenAI interpreta |
+| **Euler** · El Analista | Escéptico constructivo, riguroso y paciente | Python calcula; OpenAI interpreta y cuestiona conclusiones apresuradas |
 | **Vera** · La Comunicadora | Clara, breve y honesta | Redacta la nota final para Telegram |
 
 ```
@@ -44,7 +44,7 @@ Las instrucciones paso a paso están en [`docs/`](docs/): Guía del estudiante y
 ## Empezar en 1 minuto, sin llaves
 ```bash
 pip install -r requirements.txt pytest
-pytest -q                               # 21 passed
+pytest -q                               # 22 passed
 python analizar.py AAPL --simulacion    # la cadena completa con datos ficticios
 ```
 

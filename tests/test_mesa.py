@@ -33,6 +33,13 @@ def test_datos_faltantes_no_rompen_el_calculo():
     assert ind["posicion_rango_52s_pct"] is None
 
 
+def test_euler_es_esceptico_constructivo_tambien_en_simulacion():
+    assert "escéptico constructivo" in agentes.PROMPT_ANALISTA
+    lectura = agentes.lectura_simulada(agentes.calcular_indicadores({}))
+    pregunta = lectura["pregunta_para_investigar"]
+    assert "confirmar o contradecir" in pregunta
+
+
 def test_extraer_json_con_texto_alrededor():
     assert agentes.extraer_json('Aquí tienes: {"a": 1} listo')["a"] == 1
     with pytest.raises(ValueError):
