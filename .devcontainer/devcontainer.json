@@ -13,7 +13,7 @@
   "secrets": {
     "TELEGRAM_BOT_TOKEN": { "description": "Token de tu bot, lo entrega @BotFather en Telegram" },
     "TELEGRAM_CHAT_ID": { "description": "Tu chat_id; obténlo con: python obtener_chat_id.py" },
-    "ANTHROPIC_API_KEY": { "description": "Llave de la API de Claude (la entrega la docente)" },
+    "OPENAI_API_KEY": { "description": "Llave de la API de OpenAI" },
     "ALPHAVANTAGE_API_KEY": { "description": "Llave gratuita de alphavantage.co/support/#api-key" }
   },
   "postCreateCommand": "pip install --user -r requirements.txt pytest && pytest -q",

@@ -1,6 +1,7 @@
 """Pruebas en modo simulación: verifican la cadena sin llaves ni internet.  Ejecutar: pytest -q"""
 import json
 import os
+from types import SimpleNamespace
 
 import pytest
 
@@ -38,6 +39,33 @@ def test_extraer_json_con_texto_alrededor():
         agentes.extraer_json("sin json")
 
 
+def test_openai_responses_configura_mcp_sin_llamada_real(monkeypatch):
+    llamadas = []
+
+    class ResponsesFalsas:
+        def create(self, **kwargs):
+            llamadas.append(kwargs)
+            return SimpleNamespace(
+                output_text='{"ticker":"IBM"}',
+                output=[SimpleNamespace(type="mcp_call", name="GLOBAL_QUOTE")],
+            )
+
+    cliente_falso = SimpleNamespace(responses=ResponsesFalsas())
+    monkeypatch.setattr(agentes, "_cliente_openai", lambda: cliente_falso)
+    monkeypatch.setattr(config, "ALPHAVANTAGE_API_KEY", "llave-de-prueba")
+
+    texto, herramientas = agentes.llamar_openai("instrucciones", "Acción: IBM", usar_mcp=True)
+
+    assert texto == '{"ticker":"IBM"}'
+    assert herramientas == ["GLOBAL_QUOTE"]
+    assert llamadas[0]["instructions"] == "instrucciones"
+    assert llamadas[0]["input"] == "Acción: IBM"
+    assert llamadas[0]["max_output_tokens"] == 900
+    assert llamadas[0]["tools"][0]["type"] == "mcp"
+    assert llamadas[0]["tools"][0]["server_label"] == "alphavantage"
+    assert llamadas[0]["tools"][0]["require_approval"] == "never"
+
+
 @pytest.mark.parametrize("entrada, esperado", [(" aapl ", "AAPL"), ("brk.b", "BRK.B")])
 def test_ticker_valido(entrada, esperado):
     assert pl.normalizar_ticker(entrada) == esperado
@@ -65,16 +93,16 @@ def test_mcp_caido_usa_respaldo_demo(monkeypatch):
 
     def falla(*args, **kwargs):
         raise ConnectionError("sin red")
-    monkeypatch.setattr(agentes, "llamar_claude", falla)
+    monkeypatch.setattr(agentes, "llamar_openai", falla)
     ficha, herramientas = agentes.agente_recolector("AAPL")
     assert "DEMO" in ficha["fuente"] and herramientas == []
 
 
-def test_agentes_reales_encadenan_con_claude_simulado(monkeypatch):
-    """Imita las respuestas de Claude para revisar el camino 'real' sin gastar llaves."""
+def test_agentes_reales_encadenan_con_openai_simulado(monkeypatch):
+    """Imita las respuestas de OpenAI para revisar el camino 'real' sin gastar llaves."""
     monkeypatch.setattr(config, "MODO_SIMULACION", False)
 
-    def claude_falso(system, mensaje, usar_mcp=False, max_tokens=900):
+    def openai_falso(system, mensaje, usar_mcp=False, max_tokens=900):
         if usar_mcp:
             return ('{"nombre":"IBM","sector":"Tech","precio":"250.5","cambio_pct":"-0.8%",'
                     '"pe_ratio":"40.1","beta":"0.7","max_52s":"300","min_52s":"200"}', ["GLOBAL_QUOTE"])
@@ -85,7 +113,7 @@ def test_agentes_reales_encadenan_con_claude_simulado(monkeypatch):
         assert '"lectura_precio": "a"' in mensaje                           # recibió la entrega 2
         return "IBM: nota sin descargo", []
 
-    monkeypatch.setattr(agentes, "llamar_claude", claude_falso)
+    monkeypatch.setattr(agentes, "llamar_openai", openai_falso)
     r = pl.pipeline("IBM", avisar=lambda t: None)
     assert r["herramientas_mcp"] == ["GLOBAL_QUOTE"]
     assert r["entrega_1_ficha"]["fuente"] == "Alpha Vantage vía MCP"

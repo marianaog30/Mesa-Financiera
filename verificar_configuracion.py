@@ -24,7 +24,7 @@ def main():
 
     if "--mcp" in sys.argv:
         if config.MODO_SIMULACION:
-            print("  MCP Alpha Vantage       ⬜ omitido: faltan ANTHROPIC_API_KEY o ALPHAVANTAGE_API_KEY")
+            print("  MCP Alpha Vantage       ⬜ omitido: faltan OPENAI_API_KEY o ALPHAVANTAGE_API_KEY")
         else:
             from mesa.agentes import agente_recolector
             ficha, herramientas = agente_recolector("IBM")

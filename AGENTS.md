@@ -5,9 +5,9 @@ un ecosistema de **3 agentes financieros** que se pasan el trabajo en cadena y s
 
 ```
 Telegram /analiza AAPL ─► Batuta · Orquestador (mesa/pipeline.py)
-   ├─ Iris  · Recolectora  (Agente 1: Claude + MCP de Alpha Vantage) ─► ficha JSON
-   ├─ Euler · Analista     (Agente 2: Python calcula, Claude interpreta) ─► análisis JSON
-   └─ Vera  · Comunicadora (Agente 3: Claude redacta) ─► nota final en Telegram
+   ├─ Iris  · Recolectora  (Agente 1: OpenAI + MCP de Alpha Vantage) ─► ficha JSON
+   ├─ Euler · Analista     (Agente 2: Python calcula, OpenAI interpreta) ─► análisis JSON
+   └─ Vera  · Comunicadora (Agente 3: OpenAI redacta) ─► nota final en Telegram
 ```
 
 Usa siempre estos nombres (Batuta, Iris, Euler, Vera) al explicar el sistema: coinciden con el mockup y con las guías.
@@ -20,7 +20,7 @@ Usa siempre estos nombres (Batuta, Iris, Euler, Vera) al explicar el sistema: co
 ## Reglas de seguridad (obligatorias)
 1. **Nunca** imprimas, copies ni subas el valor de una llave. Para revisar llaves usa `python verificar_configuracion.py`, que solo dice si existen.
 2. **Nunca** agregues `.env` a git ni escribas llaves dentro del código.
-3. El modo real gasta cuota (Alpha Vantage gratuito: 25 consultas al día) y saldo de la API de Claude.
+3. El modo real gasta cuota (Alpha Vantage gratuito: 25 consultas al día) y saldo de la API de OpenAI.
    **Pregunta antes** de ejecutar sin `--simulacion` más de una vez.
 4. No cambies la regla de oro: los cálculos se hacen en Python (`calcular_indicadores`), no en el prompt.
 5. Toda nota final debe terminar con: "Nota educativa, no es recomendación de inversión."
@@ -38,7 +38,7 @@ Usa siempre estos nombres (Batuta, Iris, Euler, Vera) al explicar el sistema: co
 | Bot en vivo | `python bot_continuo.py` (Ctrl + C para detener) |
 
 Las llaves se leen de variables de entorno o del archivo `.env` (plantilla: `.env.example`).
-Si faltan `ANTHROPIC_API_KEY` o `ALPHAVANTAGE_API_KEY`, el sistema entra solo en **modo simulación**.
+Si faltan `OPENAI_API_KEY` o `ALPHAVANTAGE_API_KEY`, el sistema entra solo en **modo simulación**.
 
 ## Rutina "ejecuta la actividad"
 Cuando te pidan ejecutar o probar la actividad, sigue este orden y reporta cada resultado:
