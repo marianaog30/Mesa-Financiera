@@ -62,7 +62,7 @@ cp .env.example .env                                   # abre .env y pega tus ll
 |---|---|
 | `TELEGRAM_BOT_TOKEN` | @BotFather en Telegram |
 | `TELEGRAM_CHAT_ID` | `python obtener_chat_id.py` |
-| `OPEN_API_KEY` | OpenAI Platform: https://platform.openai.com/api-keys |
+| `OPEN_API_KEY` | OpenAI Platform: https://platform.openai.com/api-keys. Si tu repositorio ya usa `OPENAI_API_KEY`, se acepta como compatibilidad. |
 | `ALPHAVANTAGE_API_KEY` | https://www.alphavantage.co/support/#api-key (gratis, 25 consultas al día) |
 
 Dónde guardarlas, según la ruta: **Colab** → panel 🔑 · **Actions** → Settings → Secrets and variables → Actions ·

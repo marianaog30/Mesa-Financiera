@@ -41,7 +41,7 @@ Usa siempre estos nombres (Batuta, Iris, Euler, Vera) al explicar el sistema: co
 | Bot en vivo | `python bot_continuo.py` (Ctrl + C para detener) |
 
 Las llaves se leen de variables de entorno o del archivo `.env` (plantilla: `.env.example`).
-Si faltan `OPEN_API_KEY` o `ALPHAVANTAGE_API_KEY`, el sistema entra solo en **modo simulación**.
+Si faltan `OPEN_API_KEY` (o el nombre compatible `OPENAI_API_KEY`) y `ALPHAVANTAGE_API_KEY`, el sistema entra solo en **modo simulación**.
 
 ## Rutina "ejecuta la actividad"
 Cuando te pidan ejecutar o probar la actividad, sigue este orden y reporta cada resultado:

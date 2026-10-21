@@ -22,7 +22,9 @@ def _bandera(nombre, defecto="0"):
 
 TELEGRAM_BOT_TOKEN   = _texto("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID     = _texto("TELEGRAM_CHAT_ID")        # tu chat; el bot solo atiende a este chat
-OPEN_API_KEY         = _texto("OPEN_API_KEY")
+# OPEN_API_KEY es el nombre canónico del proyecto. La segunda opción mantiene
+# compatibilidad con instalaciones que ya guardaron el nombre estándar del SDK.
+OPEN_API_KEY         = _texto("OPEN_API_KEY") or _texto("OPENAI_API_KEY")
 ALPHAVANTAGE_API_KEY = _texto("ALPHAVANTAGE_API_KEY")
 
 MODELO     = _texto("MODELO", "gpt-6-luna")              # modelo rápido y económico

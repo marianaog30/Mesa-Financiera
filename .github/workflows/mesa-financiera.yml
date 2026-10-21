@@ -45,9 +45,9 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          OPEN_API_KEY: ${{ secrets.OPEN_API_KEY }}
+          OPEN_API_KEY: ${{ secrets.OPEN_API_KEY || secrets.OPENAI_API_KEY }}
           ALPHAVANTAGE_API_KEY: ${{ secrets.ALPHAVANTAGE_API_KEY }}
-          MODO_SIMULACION: ${{ inputs.simulacion && '1' || '0' }}
+          MODO_SIMULACION: ${{ inputs.simulacion == true && '1' || '0' }}
           TICKER: ${{ inputs.ticker }}  # se pasa como variable, nunca se pega dentro del comando
 
       - name: Revisar mensajes pendientes en Telegram
@@ -56,9 +56,9 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          OPEN_API_KEY: ${{ secrets.OPEN_API_KEY }}
+          OPEN_API_KEY: ${{ secrets.OPEN_API_KEY || secrets.OPENAI_API_KEY }}
           ALPHAVANTAGE_API_KEY: ${{ secrets.ALPHAVANTAGE_API_KEY }}
-          MODO_SIMULACION: ${{ inputs.simulacion && '1' || '0' }}
+          MODO_SIMULACION: ${{ inputs.simulacion == true && '1' || '0' }}
 
       - name: Guardar evidencias
         if: always()
