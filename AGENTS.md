@@ -26,13 +26,13 @@ Usa siempre estos nombres (Batuta, Iris, Euler, Vera) al explicar el sistema: co
 5. Toda nota final debe terminar con: "Nota educativa, no es recomendación de inversión."
 6. Telegram debe fallar cerrado: sin `TELEGRAM_CHAT_ID`, no se procesa ni responde a ningún chat.
 7. Nunca registres excepciones que puedan contener el URL del Bot API; el token forma parte de ese URL.
-8. El MCP de Alpha Vantage solo puede exponer `GLOBAL_QUOTE` y `COMPANY_OVERVIEW` al modelo.
+8. El MCP de Alpha Vantage solo puede exponer `TIME_SERIES_DAILY` al modelo. El código calcula las métricas a partir del OHLCV compacto gratuito y nunca presenta el último cierre como cotización en tiempo real.
 
 ## Comandos
 | Para qué | Comando |
 |---|---|
 | Instalar | `pip install -r requirements.lock` |
-| Pruebas (sin llaves) | `pytest -q` → debe decir `20 passed` o más |
+| Pruebas (sin llaves) | `pytest -q` → debe decir `27 passed` o más |
 | Cadena en simulación | `python analizar.py AAPL --simulacion` |
 | Revisar configuración | `python verificar_configuracion.py` (`--mcp` gasta 1 consulta) |
 | Cadena real | `python analizar.py AAPL` |
@@ -48,7 +48,7 @@ Cuando te pidan ejecutar o probar la actividad, sigue este orden y reporta cada 
 1. Instala dependencias y corre `pytest -q`.
 2. Corre `python analizar.py AAPL --simulacion` y muestra las entregas 1→2 y 2→3.
 3. Corre `python verificar_configuracion.py`. Si hay llaves, pregunta si desea el modo real.
-4. En modo real, corre `python analizar.py <TICKER>` y confirma que la fuente diga "Alpha Vantage vía MCP".
+4. En modo real, corre `python analizar.py <TICKER>` y confirma la fuente `TIME_SERIES_DAILY compact`, la fecha del dato y que el cierre no se presente como cotización en tiempo real.
 5. Indica dónde quedó la evidencia (`salidas/*.json`) y qué capturas tomar para la rúbrica.
 
 ## Estructura

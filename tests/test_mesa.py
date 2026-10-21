@@ -53,18 +53,19 @@ def test_openai_responses_configura_mcp_sin_llamada_real(monkeypatch):
         def create(self, **kwargs):
             llamadas.append(kwargs)
             return SimpleNamespace(
-                output_text='{"ticker":"IBM"}',
-                output=[SimpleNamespace(type="mcp_call", name="GLOBAL_QUOTE")],
+                output_text='{"estado":"consultado"}',
+                output=[SimpleNamespace(type="mcp_call", name="TIME_SERIES_DAILY", output='{"ok":true}')],
             )
 
     cliente_falso = SimpleNamespace(responses=ResponsesFalsas())
     monkeypatch.setattr(agentes, "_cliente_openai", lambda: cliente_falso)
     monkeypatch.setattr(config, "ALPHAVANTAGE_API_KEY", "llave-de-prueba")
 
-    texto, herramientas = agentes.llamar_openai("instrucciones", "Acción: IBM", usar_mcp=True)
+    texto, herramientas, salidas = agentes.llamar_openai("instrucciones", "Acción: IBM", usar_mcp=True)
 
-    assert texto == '{"ticker":"IBM"}'
-    assert herramientas == ["GLOBAL_QUOTE"]
+    assert texto == '{"estado":"consultado"}'
+    assert herramientas == ["TIME_SERIES_DAILY"]
+    assert salidas == ['{"ok":true}']
     assert llamadas[0]["instructions"] == "instrucciones"
     assert llamadas[0]["input"] == "Acción: IBM"
     assert llamadas[0]["max_output_tokens"] == 900
@@ -72,8 +73,38 @@ def test_openai_responses_configura_mcp_sin_llamada_real(monkeypatch):
     assert llamadas[0]["tools"][0]["server_label"] == "alphavantage"
     assert llamadas[0]["tools"][0]["server_url"] == "https://mcp.alphavantage.co/mcp"
     assert llamadas[0]["tools"][0]["authorization"] == "llave-de-prueba"
-    assert llamadas[0]["tools"][0]["allowed_tools"] == ["GLOBAL_QUOTE", "COMPANY_OVERVIEW"]
+    assert llamadas[0]["tools"][0]["allowed_tools"] == ["TIME_SERIES_DAILY"]
     assert llamadas[0]["tools"][0]["require_approval"] == "never"
+
+
+def test_serie_diaria_gratuita_produce_metricas_deterministas():
+    serie = {}
+    for dia in range(1, 61):
+        fecha = f"2026-08-{dia:02d}" if dia <= 31 else f"2026-09-{dia - 31:02d}"
+        cierre = 100 + dia
+        serie[fecha] = {
+            "1. open": str(cierre - 1), "2. high": str(cierre + 2),
+            "3. low": str(cierre - 2), "4. close": str(cierre),
+            "5. volume": str(1000 + dia),
+        }
+
+    ficha = agentes.ficha_desde_serie_diaria("TEST", serie)
+    indicadores = agentes.calcular_indicadores(ficha)
+
+    assert ficha["precio"] == 160
+    assert ficha["fecha_dato"] == "2026-09-29"
+    assert ficha["sesiones_disponibles"] == 60
+    assert ficha["sma_20"] == 150.5
+    assert ficha["sma_50"] == 135.5
+    assert ficha["rsi_14"] == 100.0
+    assert ficha["tipo_precio"].startswith("cierre diario")
+    assert indicadores["tendencia_medias"].startswith("🟢")
+
+
+def test_localiza_serie_en_salida_mcp_envuelta():
+    serie = {"2026-10-20": {"4. close": "100"}}
+    salida = json.dumps({"content": [{"type": "text", "text": json.dumps({"Time Series (Daily)": serie})}]})
+    assert agentes._buscar_serie_diaria([salida]) == serie
 
 
 @pytest.mark.parametrize("entrada, esperado", [(" aapl ", "AAPL"), ("brk.b", "BRK.B")])
@@ -112,21 +143,30 @@ def test_agentes_reales_encadenan_con_openai_simulado(monkeypatch):
     """Imita las respuestas de OpenAI para revisar el camino 'real' sin gastar llaves."""
     monkeypatch.setattr(config, "MODO_SIMULACION", False)
 
+    serie = {}
+    for dia in range(1, 61):
+        fecha = f"2026-08-{dia:02d}" if dia <= 31 else f"2026-09-{dia - 31:02d}"
+        cierre = 200 + dia
+        serie[fecha] = {"1. open": str(cierre - 1), "2. high": str(cierre + 2),
+                        "3. low": str(cierre - 2), "4. close": str(cierre), "5. volume": "1000"}
+
     def openai_falso(system, mensaje, usar_mcp=False, max_tokens=900):
         if usar_mcp:
-            return ('{"nombre":"IBM","sector":"Tech","precio":"250.5","cambio_pct":"-0.8%",'
-                    '"pe_ratio":"40.1","beta":"0.7","max_52s":"300","min_52s":"200"}', ["GLOBAL_QUOTE"])
+            return '{"estado":"consultado"}', ["TIME_SERIES_DAILY"], [
+                json.dumps({"Time Series (Daily)": serie})
+            ]
         if "Analista" in system:
             datos = json.loads(mensaje)
-            assert datos["indicadores"]["posicion_rango_52s_pct"] == 50.5   # recibió la entrega 1
-            return '{"lectura_precio":"a","lectura_riesgo":"b","lectura_valuacion":"c","pregunta_para_investigar":"d"}', []
+            assert datos["indicadores"]["tendencia_medias"].startswith("🟢")
+            return ('{"lectura_precio":"a","lectura_tendencia":"b","lectura_riesgo":"c",'
+                    '"lectura_volumen":"d","pregunta_para_investigar":"e"}', [], [])
         assert '"lectura_precio": "a"' in mensaje                           # recibió la entrega 2
-        return "IBM: nota sin descargo", []
+        return "IBM: nota sin descargo", [], []
 
     monkeypatch.setattr(agentes, "llamar_openai", openai_falso)
     r = pl.pipeline("IBM", avisar=lambda t: None)
-    assert r["herramientas_mcp"] == ["GLOBAL_QUOTE"]
-    assert r["entrega_1_ficha"]["fuente"] == "Alpha Vantage vía MCP"
+    assert r["herramientas_mcp"] == ["TIME_SERIES_DAILY"]
+    assert "datos gratuitos" in r["entrega_1_ficha"]["fuente"]
     assert r["entrega_3_nota"].endswith(agentes.DESCARGO)                   # el descargo se garantiza
 
 

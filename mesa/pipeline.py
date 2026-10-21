@@ -29,7 +29,10 @@ def pipeline(ticker, avisar=print, guardar=True):
     ticker = normalizar_ticker(ticker)
     modo = "SIMULACIÓN" if config.MODO_SIMULACION else "REAL"
 
-    avisar(f"🎼 Batuta · Orquestador\nRecibí tu orden. Inicio la cadena para {ticker} (modo {modo}).")
+    avisar(
+        f"🎼 Batuta · Orquestador\nRecibí tu orden. Inicio la cadena para {ticker} "
+        f"(modo {modo}, modelo {config.MODELO})."
+    )
     avisar(f"🛰️ Iris · Recolectora buscando datos de {ticker}…")
     ficha, herramientas = agente_recolector(ticker)
     if config.MODO_CLASE:
