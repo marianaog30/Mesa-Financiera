@@ -44,7 +44,7 @@ Las instrucciones paso a paso están en [`docs/`](docs/): Guía del estudiante y
 ## Empezar en 1 minuto, sin llaves
 ```bash
 pip install -r requirements.lock
-pytest -q                               # 25 passed
+pytest -q                               # 27 passed
 python analizar.py AAPL --simulacion    # la cadena completa con datos ficticios
 ```
 
@@ -77,6 +77,11 @@ Nunca las escribas en el código ni las subas a GitHub.
 - Si el MCP no entrega una serie utilizable, Iris consulta el mismo endpoint gratuito directamente por HTTPS con `ALPHAVANTAGE_API_KEY`; nunca expone la llave ni cambia de proveedor.
 - En modo real no se sustituyen fallos por cifras ficticias: si Alpha Vantage rechaza la llave, agota la cuota o no entrega la serie, el proceso se detiene y Telegram avisa la causa de forma segura.
 - El resultado usa el último cierre diario histórico disponible; no se presenta como precio en tiempo real. `COMPANY_OVERVIEW`, noticias y cotizaciones estadounidenses en tiempo real no se usan porque Alpha Vantage las marca actualmente como premium.
+
+## Validación real (21/10/2026)
+
+- [Pruebas automatizadas: 27 aprobadas](https://github.com/marianaog30/Mesa-Financiera/actions/runs/39655688432).
+- [Análisis real de AAPL con GPT-5.1](https://github.com/marianaog30/Mesa-Financiera/actions/runs/39655755095): el MCP invocó `TIME_SERIES_DAILY` y el respaldo REST obtuvo 100 sesiones gratuitas. El resultado corresponde al cierre histórico del 20/10/2026; no es una cotización en tiempo real.
 - Las GitHub Actions están fijadas a commits inmutables y solo los pasos Python necesarios reciben Secrets.
 - `requirements.lock` conserva las versiones probadas; Dependabot propone actualizaciones semanales revisables.
 
