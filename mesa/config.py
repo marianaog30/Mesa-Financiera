@@ -27,7 +27,7 @@ TELEGRAM_CHAT_ID     = _texto("TELEGRAM_CHAT_ID")        # tu chat; el bot solo 
 OPEN_API_KEY         = _texto("OPEN_API_KEY") or _texto("OPENAI_API_KEY")
 ALPHAVANTAGE_API_KEY = _texto("ALPHAVANTAGE_API_KEY")
 
-MODELO     = _texto("MODELO", "gpt-6-luna")              # modelo rápido y económico
+MODELO     = _texto("MODELO", "gpt-5.1")                  # modelo solicitado para la práctica
 MODO_CLASE = _bandera("MODO_CLASE", "1")                  # 1 = muestra cada entrega entre agentes
 
 # Modo simulación: sin llaves de IA ni de datos. Se activa solo o con MODO_SIMULACION=1.
