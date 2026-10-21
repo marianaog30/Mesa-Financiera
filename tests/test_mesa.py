@@ -193,6 +193,25 @@ def test_revision_sin_chat_id_se_bloquea(monkeypatch, capsys):
     assert "bloqueada por seguridad" in capsys.readouterr().out
 
 
+def test_cli_avisa_en_telegram_si_openai_falla_sin_revelar_detalles(monkeypatch):
+    import analizar
+
+    enviados = []
+    monkeypatch.setattr(config, "TELEGRAM_CHAT_ID", "111")
+    monkeypatch.setattr(telegram_io, "enviar", lambda chat, texto: enviados.append(texto))
+    monkeypatch.setattr(pl, "pipeline", lambda *args, **kwargs: (_ for _ in ()).throw(
+        RuntimeError("detalle sensible que no debe salir")
+    ))
+    monkeypatch.setattr(os.sys, "argv", ["analizar.py", "AAPL", "--telegram"])
+
+    with pytest.raises(SystemExit) as salida:
+        analizar.main()
+
+    assert "RuntimeError" in enviados[-1]
+    assert "detalle sensible" not in enviados[-1]
+    assert "detalle sensible" not in str(salida.value)
+
+
 def test_los_agentes_se_presentan_con_su_nombre():
     """Los nombres del mockup (Batuta, Iris, Euler, Vera) aparecen en Telegram."""
     avisos = []

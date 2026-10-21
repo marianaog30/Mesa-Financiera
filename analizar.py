@@ -37,6 +37,15 @@ def main():
         resultado = pipeline(args.ticker, avisar=avisar)
     except ValueError as error:
         sys.exit(f"❌ {error}")
+    except Exception as error:
+        mensaje = (f"⚠️ No pude completar el análisis ({type(error).__name__}). "
+                   "Revisa las llaves y el saldo de las APIs; después intenta de nuevo.")
+        if args.telegram:
+            try:
+                enviar(config.TELEGRAM_CHAT_ID, mensaje)
+            except Exception:
+                pass
+        sys.exit(f"❌ {mensaje}")
 
     print("\n" + "=" * 60 + "\nNOTA FINAL (Vera · Agente 3)\n" + "=" * 60)
     print(resultado["entrega_3_nota"])

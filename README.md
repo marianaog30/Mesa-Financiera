@@ -44,7 +44,7 @@ Las instrucciones paso a paso están en [`docs/`](docs/): Guía del estudiante y
 ## Empezar en 1 minuto, sin llaves
 ```bash
 pip install -r requirements.lock
-pytest -q                               # 24 passed
+pytest -q                               # 25 passed
 python analizar.py AAPL --simulacion    # la cadena completa con datos ficticios
 ```
 
