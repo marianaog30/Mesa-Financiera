@@ -29,32 +29,40 @@ jobs:
   mesa:
     runs-on: ubuntu-latest
     timeout-minutes: 8
-    env:
-      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-      ALPHAVANTAGE_API_KEY: ${{ secrets.ALPHAVANTAGE_API_KEY }}
-      MODO_SIMULACION: ${{ inputs.simulacion && '1' || '0' }}
-      TICKER: ${{ inputs.ticker }}  # se pasa como variable, nunca se pega dentro del comando
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
           python-version: "3.12"
           cache: pip
+          cache-dependency-path: requirements.lock
       - name: Instalar dependencias
-        run: pip install -r requirements.txt
+        run: pip install -r requirements.lock
 
       - name: Analizar el ticker indicado a mano
-        if: github.event_name == 'workflow_dispatch' && env.TICKER != ''
+        if: github.event_name == 'workflow_dispatch' && inputs.ticker != ''
         run: python analizar.py "$TICKER" --telegram
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          OPEN_API_KEY: ${{ secrets.OPEN_API_KEY }}
+          ALPHAVANTAGE_API_KEY: ${{ secrets.ALPHAVANTAGE_API_KEY }}
+          MODO_SIMULACION: ${{ inputs.simulacion && '1' || '0' }}
+          TICKER: ${{ inputs.ticker }}  # se pasa como variable, nunca se pega dentro del comando
 
       - name: Revisar mensajes pendientes en Telegram
+        if: github.event_name != 'workflow_dispatch' || inputs.ticker == ''
         run: python revisar_telegram.py
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          OPEN_API_KEY: ${{ secrets.OPEN_API_KEY }}
+          ALPHAVANTAGE_API_KEY: ${{ secrets.ALPHAVANTAGE_API_KEY }}
+          MODO_SIMULACION: ${{ inputs.simulacion && '1' || '0' }}
 
       - name: Guardar evidencias
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: evidencias-${{ github.run_number }}
           path: salidas/

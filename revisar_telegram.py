@@ -16,6 +16,9 @@ def main():
         # Copia de la plantilla sin Secrets: terminar en verde, sin correos de error cada 8 minutos.
         print("ℹ️ Sin TELEGRAM_BOT_TOKEN: nada que revisar. Agrega tus Secrets para activar el bot.")
         return
+    if not config.TELEGRAM_CHAT_ID:
+        print("🔒 Sin TELEGRAM_CHAT_ID: revisión bloqueada por seguridad; no se procesó ningún mensaje.")
+        return
     try:
         print(f"Bot: @{verificar_bot()}")
     except RuntimeError as error:
@@ -37,7 +40,7 @@ def main():
                 if resultado:
                     print(f"✅ {resultado['ticker']} atendido · evidencia: {resultado['archivo']}")
         except Exception as error:                           # un error no detiene a los demás
-            print(f"⚠️ Error con el mensaje {actualizacion['update_id']}: {type(error).__name__}: {error}")
+            print(f"⚠️ Error con el mensaje {actualizacion['update_id']}: {type(error).__name__}")
         finally:
             confirmar_leidos(actualizacion["update_id"])      # nunca se procesa dos veces
 

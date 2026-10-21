@@ -22,14 +22,14 @@ def _bandera(nombre, defecto="0"):
 
 TELEGRAM_BOT_TOKEN   = _texto("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID     = _texto("TELEGRAM_CHAT_ID")        # tu chat; el bot solo atiende a este chat
-OPENAI_API_KEY       = _texto("OPENAI_API_KEY")
+OPEN_API_KEY         = _texto("OPEN_API_KEY")
 ALPHAVANTAGE_API_KEY = _texto("ALPHAVANTAGE_API_KEY")
 
 MODELO     = _texto("MODELO", "gpt-6-luna")              # modelo rápido y económico
 MODO_CLASE = _bandera("MODO_CLASE", "1")                  # 1 = muestra cada entrega entre agentes
 
 # Modo simulación: sin llaves de IA ni de datos. Se activa solo o con MODO_SIMULACION=1.
-MODO_SIMULACION = _bandera("MODO_SIMULACION") or not (OPENAI_API_KEY and ALPHAVANTAGE_API_KEY)
+MODO_SIMULACION = _bandera("MODO_SIMULACION") or not (OPEN_API_KEY and ALPHAVANTAGE_API_KEY)
 
 MAX_ANALISIS_POR_RUN = int(_texto("MAX_ANALISIS_POR_RUN", "3"))   # cuida la cuota de Alpha Vantage
 CARPETA_SALIDAS = _texto("CARPETA_SALIDAS", "salidas")
@@ -42,7 +42,7 @@ def resumen():
     return {
         "TELEGRAM_BOT_TOKEN": estado(TELEGRAM_BOT_TOKEN),
         "TELEGRAM_CHAT_ID": estado(TELEGRAM_CHAT_ID),
-        "OPENAI_API_KEY": estado(OPENAI_API_KEY),
+        "OPEN_API_KEY": estado(OPEN_API_KEY),
         "ALPHAVANTAGE_API_KEY": estado(ALPHAVANTAGE_API_KEY),
         "MODELO": MODELO,
         "MODO_SIMULACION": "sí" if MODO_SIMULACION else "no (datos y agentes reales)",

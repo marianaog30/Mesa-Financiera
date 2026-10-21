@@ -43,8 +43,8 @@ Las instrucciones paso a paso están en [`docs/`](docs/): Guía del estudiante y
 
 ## Empezar en 1 minuto, sin llaves
 ```bash
-pip install -r requirements.txt pytest
-pytest -q                               # 22 passed
+pip install -r requirements.lock
+pytest -q                               # 24 passed
 python analizar.py AAPL --simulacion    # la cadena completa con datos ficticios
 ```
 
@@ -53,7 +53,7 @@ python analizar.py AAPL --simulacion    # la cadena completa con datos ficticios
 git clone https://github.com/TU_USUARIO/mesa-financiera-telegram.git
 cd mesa-financiera-telegram
 python -m venv .venv && source .venv/bin/activate     # Windows: .venv\Scripts\activate
-pip install -r requirements.txt pytest
+pip install -r requirements.lock
 cp .env.example .env                                   # abre .env y pega tus llaves
 ```
 
@@ -62,11 +62,19 @@ cp .env.example .env                                   # abre .env y pega tus ll
 |---|---|
 | `TELEGRAM_BOT_TOKEN` | @BotFather en Telegram |
 | `TELEGRAM_CHAT_ID` | `python obtener_chat_id.py` |
-| `OPENAI_API_KEY` | OpenAI Platform: https://platform.openai.com/api-keys |
+| `OPEN_API_KEY` | OpenAI Platform: https://platform.openai.com/api-keys |
 | `ALPHAVANTAGE_API_KEY` | https://www.alphavantage.co/support/#api-key (gratis, 25 consultas al día) |
 
 Dónde guardarlas, según la ruta: **Colab** → panel 🔑 · **Actions** → Settings → Secrets and variables → Actions ·
 **Codespaces** → tu perfil → Settings → Codespaces → Codespaces secrets · **Tu computadora** → archivo `.env`.
 Nunca las escribas en el código ni las subas a GitHub.
+
+## Seguridad incorporada
+
+- El bot **falla de forma cerrada**: sin `TELEGRAM_CHAT_ID`, ningún chat puede ejecutar análisis.
+- Los chats no autorizados se ignoran en silencio y los errores nunca muestran el token de Telegram.
+- OpenAI solo puede descubrir `GLOBAL_QUOTE` y `COMPANY_OVERVIEW` en el MCP oficial de Alpha Vantage.
+- Las GitHub Actions están fijadas a commits inmutables y solo los pasos Python necesarios reciben Secrets.
+- `requirements.lock` conserva las versiones probadas; Dependabot propone actualizaciones semanales revisables.
 
 > Material educativo. Las notas que generan los agentes **no son recomendaciones de inversión**.

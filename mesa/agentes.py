@@ -24,7 +24,7 @@ def _cliente_openai():
     global _cliente
     if _cliente is None:
         from openai import OpenAI
-        _cliente = OpenAI(api_key=config.OPENAI_API_KEY)
+        _cliente = OpenAI(api_key=config.OPEN_API_KEY)
     return _cliente
 
 
@@ -40,8 +40,10 @@ def llamar_openai(system, mensaje, usar_mcp=False, max_tokens=900):
                 "type": "mcp",
                 "server_label": "alphavantage",
                 "server_description": "Datos bursátiles de Alpha Vantage para una actividad educativa.",
-                "server_url": f"https://mcp.alphavantage.co/mcp?apikey={config.ALPHAVANTAGE_API_KEY}",
+                "server_url": "https://mcp.alphavantage.co/mcp",
+                "authorization": config.ALPHAVANTAGE_API_KEY,
                 "require_approval": "never",
+                "allowed_tools": ["GLOBAL_QUOTE", "COMPANY_OVERVIEW"],
             }],
         )
     else:
@@ -79,6 +81,7 @@ Tu personalidad: curiosa y meticulosa; jamás inventas un dato.
 Tarea: obtener datos REALES de la acción indicada con las herramientas de Alpha Vantage.
 Reglas:
 - Haz como máximo 2 consultas: cotización actual y datos generales de la empresa.
+- Usa exclusivamente las herramientas GLOBAL_QUOTE y COMPANY_OVERVIEW.
 - NUNCA inventes cifras. Si un dato no está disponible, escribe null.
 - Responde SOLO con un JSON con estas claves exactas:
   ticker, nombre, sector, precio, cambio_pct, fecha_dato, pe_ratio, beta,

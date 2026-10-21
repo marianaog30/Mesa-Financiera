@@ -24,11 +24,14 @@ Usa siempre estos nombres (Batuta, Iris, Euler, Vera) al explicar el sistema: co
    **Pregunta antes** de ejecutar sin `--simulacion` más de una vez.
 4. No cambies la regla de oro: los cálculos se hacen en Python (`calcular_indicadores`), no en el prompt.
 5. Toda nota final debe terminar con: "Nota educativa, no es recomendación de inversión."
+6. Telegram debe fallar cerrado: sin `TELEGRAM_CHAT_ID`, no se procesa ni responde a ningún chat.
+7. Nunca registres excepciones que puedan contener el URL del Bot API; el token forma parte de ese URL.
+8. El MCP de Alpha Vantage solo puede exponer `GLOBAL_QUOTE` y `COMPANY_OVERVIEW` al modelo.
 
 ## Comandos
 | Para qué | Comando |
 |---|---|
-| Instalar | `pip install -r requirements.txt pytest` |
+| Instalar | `pip install -r requirements.lock` |
 | Pruebas (sin llaves) | `pytest -q` → debe decir `20 passed` o más |
 | Cadena en simulación | `python analizar.py AAPL --simulacion` |
 | Revisar configuración | `python verificar_configuracion.py` (`--mcp` gasta 1 consulta) |
@@ -38,7 +41,7 @@ Usa siempre estos nombres (Batuta, Iris, Euler, Vera) al explicar el sistema: co
 | Bot en vivo | `python bot_continuo.py` (Ctrl + C para detener) |
 
 Las llaves se leen de variables de entorno o del archivo `.env` (plantilla: `.env.example`).
-Si faltan `OPENAI_API_KEY` o `ALPHAVANTAGE_API_KEY`, el sistema entra solo en **modo simulación**.
+Si faltan `OPEN_API_KEY` o `ALPHAVANTAGE_API_KEY`, el sistema entra solo en **modo simulación**.
 
 ## Rutina "ejecuta la actividad"
 Cuando te pidan ejecutar o probar la actividad, sigue este orden y reporta cada resultado:

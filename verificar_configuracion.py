@@ -14,7 +14,10 @@ def main():
         print(f"  {nombre:<22} {estado}")
 
     errores = 0
-    if config.TELEGRAM_BOT_TOKEN:
+    if config.TELEGRAM_BOT_TOKEN and not config.TELEGRAM_CHAT_ID:
+        errores += 1
+        print("  Telegram                🔒 bloqueado: falta TELEGRAM_CHAT_ID")
+    elif config.TELEGRAM_BOT_TOKEN:
         try:
             from mesa.telegram_io import verificar_bot
             print(f"  Telegram                ✅ bot @{verificar_bot()} responde")
@@ -24,7 +27,7 @@ def main():
 
     if "--mcp" in sys.argv:
         if config.MODO_SIMULACION:
-            print("  MCP Alpha Vantage       ⬜ omitido: faltan OPENAI_API_KEY o ALPHAVANTAGE_API_KEY")
+            print("  MCP Alpha Vantage       ⬜ omitido: faltan OPEN_API_KEY o ALPHAVANTAGE_API_KEY")
         else:
             from mesa.agentes import agente_recolector
             ficha, herramientas = agente_recolector("IBM")

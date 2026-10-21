@@ -8,7 +8,7 @@ import pytest
 os.environ["MODO_SIMULACION"] = "1"
 
 from mesa import agentes, config, pipeline as pl          # noqa: E402
-from mesa import comandos                                  # noqa: E402
+from mesa import comandos, telegram_io                     # noqa: E402
 
 
 @pytest.fixture(autouse=True)
@@ -70,6 +70,9 @@ def test_openai_responses_configura_mcp_sin_llamada_real(monkeypatch):
     assert llamadas[0]["max_output_tokens"] == 900
     assert llamadas[0]["tools"][0]["type"] == "mcp"
     assert llamadas[0]["tools"][0]["server_label"] == "alphavantage"
+    assert llamadas[0]["tools"][0]["server_url"] == "https://mcp.alphavantage.co/mcp"
+    assert llamadas[0]["tools"][0]["authorization"] == "llave-de-prueba"
+    assert llamadas[0]["tools"][0]["allowed_tools"] == ["GLOBAL_QUOTE", "COMPANY_OVERVIEW"]
     assert llamadas[0]["tools"][0]["require_approval"] == "never"
 
 
@@ -127,16 +130,32 @@ def test_agentes_reales_encadenan_con_openai_simulado(monkeypatch):
     assert r["entrega_3_nota"].endswith(agentes.DESCARGO)                   # el descargo se garantiza
 
 
-def test_bot_ignora_chats_ajenos_y_responde_ayuda(monkeypatch):
+def test_bot_falla_cerrado_e_ignora_chats_ajenos(monkeypatch):
     enviados = []
     monkeypatch.setattr(comandos, "enviar", lambda chat, texto: enviados.append((chat, texto)))
+    monkeypatch.setattr(config, "TELEGRAM_CHAT_ID", "")
+    assert comandos.atender({"chat": {"id": 111}, "text": "/analiza AAPL"}) is None
+    assert enviados == []
     monkeypatch.setattr(config, "TELEGRAM_CHAT_ID", "111")
     assert comandos.atender({"chat": {"id": 999}, "text": "/analiza AAPL"}) is None
-    assert enviados[-1][1] == "Este bot es privado."
+    assert enviados == []
     comandos.atender({"chat": {"id": 111}, "text": "hola"})
     assert "Mesa Financiera" in enviados[-1][1]
     r = comandos.atender({"chat": {"id": 111}, "text": "/analiza aapl"})
     assert r["ticker"] == "AAPL" and agentes.DESCARGO in enviados[-1][1]
+
+
+def test_error_de_telegram_no_revela_el_token(monkeypatch):
+    token = "123456789:secreto-que-no-debe-aparecer"
+    monkeypatch.setattr(config, "TELEGRAM_BOT_TOKEN", token)
+
+    def falla(*args, **kwargs):
+        raise telegram_io.requests.ConnectionError(f"falló https://api.telegram.org/bot{token}/getMe")
+
+    monkeypatch.setattr(telegram_io.requests, "get", falla)
+    with pytest.raises(RuntimeError) as error:
+        telegram_io.verificar_bot()
+    assert token not in str(error.value)
 
 
 def test_revision_de_github_actions_atiende_y_confirma(monkeypatch):
@@ -164,6 +183,14 @@ def test_revision_sin_token_termina_sin_error(monkeypatch, capsys):
     monkeypatch.setattr(config, "TELEGRAM_BOT_TOKEN", "")
     rt.main()
     assert "nada que revisar" in capsys.readouterr().out
+
+
+def test_revision_sin_chat_id_se_bloquea(monkeypatch, capsys):
+    import revisar_telegram as rt
+    monkeypatch.setattr(config, "TELEGRAM_BOT_TOKEN", "token-de-prueba")
+    monkeypatch.setattr(config, "TELEGRAM_CHAT_ID", "")
+    rt.main()
+    assert "bloqueada por seguridad" in capsys.readouterr().out
 
 
 def test_los_agentes_se_presentan_con_su_nombre():
