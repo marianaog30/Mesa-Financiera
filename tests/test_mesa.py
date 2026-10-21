@@ -153,14 +153,16 @@ def test_cadena_completa_output_es_input():
         assert json.load(f)["ticker"] == "MSFT"
 
 
-def test_mcp_caido_usa_respaldo_demo(monkeypatch):
+def test_modo_real_no_sustituye_fallo_de_datos_con_demo(monkeypatch):
     monkeypatch.setattr(config, "MODO_SIMULACION", False)
 
     def falla(*args, **kwargs):
         raise ConnectionError("sin red")
     monkeypatch.setattr(agentes, "llamar_openai", falla)
-    ficha, herramientas = agentes.agente_recolector("AAPL")
-    assert "DEMO" in ficha["fuente"] and herramientas == []
+    monkeypatch.setattr(agentes, "consultar_serie_diaria_rest", falla)
+    with pytest.raises(agentes.DatosAlphaVantageError) as error:
+        agentes.agente_recolector("AAPL")
+    assert error.value.codigo == "conexion_o_respuesta"
 
 
 def test_agentes_reales_encadenan_con_openai_simulado(monkeypatch):

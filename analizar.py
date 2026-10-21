@@ -21,6 +21,7 @@ def main():
         os.environ["MODO_SIMULACION"] = "1"          # debe fijarse antes de importar la configuración
 
     from mesa import config
+    from mesa.agentes import DatosAlphaVantageError
     from mesa.pipeline import pipeline
 
     avisar = print
@@ -37,6 +38,22 @@ def main():
         resultado = pipeline(args.ticker, avisar=avisar)
     except ValueError as error:
         sys.exit(f"❌ {error}")
+    except DatosAlphaVantageError as error:
+        mensajes = {
+            "cuota_diaria": "Alpha Vantage alcanzó la cuota diaria de la llave gratuita.",
+            "llave_no_valida": "Alpha Vantage rechazó la llave configurada.",
+            "acceso_premium": "Alpha Vantage indicó que la consulta requiere acceso premium.",
+            "solicitud_invalida": "Alpha Vantage rechazó los parámetros de la consulta.",
+            "respuesta_sin_serie": "Alpha Vantage respondió, pero no entregó la serie diaria.",
+            "conexion_o_respuesta": "No fue posible obtener una respuesta utilizable de Alpha Vantage.",
+        }
+        mensaje = f"⚠️ {mensajes.get(error.codigo, mensajes['conexion_o_respuesta'])}"
+        if args.telegram:
+            try:
+                enviar(config.TELEGRAM_CHAT_ID, mensaje)
+            except Exception:
+                pass
+        sys.exit(f"❌ {mensaje}")
     except Exception as error:
         mensaje = (f"⚠️ No pude completar el análisis ({type(error).__name__}). "
                    "Revisa las llaves y el saldo de las APIs; después intenta de nuevo.")

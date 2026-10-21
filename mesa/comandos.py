@@ -1,4 +1,5 @@
 """Interpreta los mensajes que el alumno escribe en Telegram (lo comparten el bot continuo y GitHub Actions)."""
+from .agentes import DatosAlphaVantageError
 from .pipeline import normalizar_ticker, pipeline
 from .telegram_io import chat_autorizado, enviar
 
@@ -35,6 +36,15 @@ def atender(mensaje):
         resultado = pipeline(ticker, avisar=lambda t: enviar(chat_id, t))
         enviar(chat_id, resultado["entrega_3_nota"])
         return resultado
+    except DatosAlphaVantageError as error:
+        mensajes = {
+            "cuota_diaria": "Alpha Vantage alcanzó la cuota diaria gratuita.",
+            "llave_no_valida": "Alpha Vantage rechazó la llave configurada.",
+            "acceso_premium": "Alpha Vantage indicó que la consulta requiere acceso premium.",
+        }
+        enviar(chat_id, f"⚠️ {mensajes.get(error.codigo, 'Alpha Vantage no entregó datos reales.')}"
+                        " Intenta después de revisar la llave o la cuota.")
+        raise
     except Exception as error:
         enviar(chat_id, f"⚠️ No pude completar el análisis ({type(error).__name__}). "
                         "Revisa llaves y saldo, o intenta en unos minutos.")

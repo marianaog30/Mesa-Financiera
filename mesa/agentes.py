@@ -19,6 +19,14 @@ from . import config
 DESCARGO = "Nota educativa, no es recomendación de inversión."
 FIRMA_VERA = "✍️ Vera · Comunicadora"
 
+
+class DatosAlphaVantageError(RuntimeError):
+    """Fallo clasificable de Alpha Vantage sin incluir la llave ni la respuesta completa."""
+
+    def __init__(self, codigo):
+        super().__init__(codigo)
+        self.codigo = codigo
+
 # ----------------------------------------------------------------------
 # Conexión con OpenAI (solo se usa fuera del modo simulación)
 # ----------------------------------------------------------------------
@@ -220,9 +228,25 @@ def consultar_serie_diaria_rest(ticker):
         timeout=20,
     )
     respuesta.raise_for_status()
-    serie = _buscar_serie_diaria(respuesta.json())
+    datos = respuesta.json()
+    serie = _buscar_serie_diaria(datos)
     if not serie:
-        raise ValueError("Alpha Vantage REST no devolvió una serie diaria utilizable")
+        mensajes = " ".join(
+            str(datos.get(clave, ""))
+            for clave in ("Information", "Note", "Error Message")
+            if isinstance(datos, dict)
+        ).lower()
+        if "rate limit" in mensajes or "25 requests" in mensajes or "call frequency" in mensajes:
+            codigo = "cuota_diaria"
+        elif "invalid api key" in mensajes or "demo api key" in mensajes:
+            codigo = "llave_no_valida"
+        elif "premium" in mensajes:
+            codigo = "acceso_premium"
+        elif "error message" in {str(k).lower() for k in datos}:
+            codigo = "solicitud_invalida"
+        else:
+            codigo = "respuesta_sin_serie"
+        raise DatosAlphaVantageError(codigo)
     return serie
 
 
@@ -281,11 +305,8 @@ def agente_recolector(ticker):
             ficha["canal_datos"] = "REST"
             return ficha, herramientas
         except Exception as error_rest:            # cuota agotada, llave inválida o red caída
-            motivo = (
-                f"MCP no disponible: {type(error_mcp).__name__}; "
-                f"REST no disponible: {type(error_rest).__name__}"
-            )
-            return ficha_demo(ticker, motivo), herramientas
+            codigo = getattr(error_rest, "codigo", "conexion_o_respuesta")
+            raise DatosAlphaVantageError(codigo) from error_mcp
 
 
 # ----------------------------------------------------------------------
