@@ -101,10 +101,34 @@ def test_serie_diaria_gratuita_produce_metricas_deterministas():
     assert indicadores["tendencia_medias"].startswith("🟢")
 
 
-def test_localiza_serie_en_salida_mcp_envuelta():
-    serie = {"2026-10-20": {"4. close": "100"}}
+def test_localiza_serie_en_salida_mcp_envuelta_y_en_rest(monkeypatch):
+    serie = {
+        "2026-10-19": {"1. open": "98", "2. high": "101", "3. low": "97",
+                       "4. close": "100", "5. volume": "900"},
+        "2026-10-20": {"1. open": "100", "2. high": "103", "3. low": "99",
+                       "4. close": "102", "5. volume": "1000"},
+    }
     salida = json.dumps({"content": [{"type": "text", "text": json.dumps({"Time Series (Daily)": serie})}]})
     assert agentes._buscar_serie_diaria([salida]) == serie
+
+    class Respuesta:
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return {"Time Series (Daily)": serie}
+
+    monkeypatch.setattr(agentes.requests, "get", lambda *args, **kwargs: Respuesta())
+    assert agentes.consultar_serie_diaria_rest("TEST") == serie
+
+    monkeypatch.setattr(config, "MODO_SIMULACION", False)
+    monkeypatch.setattr(
+        agentes, "llamar_openai", lambda *args, **kwargs: ('{"estado":"consultado"}', [], [])
+    )
+    ficha, herramientas = agentes.agente_recolector("TEST")
+    assert ficha["canal_datos"] == "REST"
+    assert ficha["precio"] == 102
+    assert herramientas == []
 
 
 @pytest.mark.parametrize("entrada, esperado", [(" aapl ", "AAPL"), ("brk.b", "BRK.B")])

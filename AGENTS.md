@@ -26,7 +26,7 @@ Usa siempre estos nombres (Batuta, Iris, Euler, Vera) al explicar el sistema: co
 5. Toda nota final debe terminar con: "Nota educativa, no es recomendación de inversión."
 6. Telegram debe fallar cerrado: sin `TELEGRAM_CHAT_ID`, no se procesa ni responde a ningún chat.
 7. Nunca registres excepciones que puedan contener el URL del Bot API; el token forma parte de ese URL.
-8. El MCP de Alpha Vantage solo puede exponer `TIME_SERIES_DAILY` al modelo. El código calcula las métricas a partir del OHLCV compacto gratuito y nunca presenta el último cierre como cotización en tiempo real.
+8. El MCP de Alpha Vantage solo puede exponer `TIME_SERIES_DAILY` al modelo. Si el MCP no entrega una serie utilizable, el código consulta ese mismo endpoint gratuito por HTTPS como respaldo. Todos los cálculos parten del OHLCV compacto y el último cierre nunca se presenta como cotización en tiempo real.
 
 ## Comandos
 | Para qué | Comando |

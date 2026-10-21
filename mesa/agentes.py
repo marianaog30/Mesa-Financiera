@@ -12,6 +12,8 @@ import math
 import re
 import statistics
 
+import requests
+
 from . import config
 
 DESCARGO = "Nota educativa, no es recomendación de inversión."
@@ -205,6 +207,25 @@ def ficha_desde_serie_diaria(ticker, serie):
     }
 
 
+def consultar_serie_diaria_rest(ticker):
+    """Respaldo directo al endpoint gratuito cuando el servidor MCP no entrega la serie."""
+    respuesta = requests.get(
+        "https://www.alphavantage.co/query",
+        params={
+            "function": "TIME_SERIES_DAILY",
+            "symbol": ticker,
+            "outputsize": "compact",
+            "apikey": config.ALPHAVANTAGE_API_KEY,
+        },
+        timeout=20,
+    )
+    respuesta.raise_for_status()
+    serie = _buscar_serie_diaria(respuesta.json())
+    if not serie:
+        raise ValueError("Alpha Vantage REST no devolvió una serie diaria utilizable")
+    return serie
+
+
 # ----------------------------------------------------------------------
 # IRIS · La Recolectora (Agente 1)
 # ----------------------------------------------------------------------
@@ -239,6 +260,7 @@ def agente_recolector(ticker):
     """Devuelve (ficha, herramientas_usadas)."""
     if config.MODO_SIMULACION:
         return ficha_demo(ticker, "modo simulación"), []
+    herramientas = []
     try:
         _, herramientas, salidas = llamar_openai(
             PROMPT_RECOLECTOR, f"Acción: {ticker}", usar_mcp=True, max_tokens=200
@@ -247,9 +269,23 @@ def agente_recolector(ticker):
         if not serie:
             raise ValueError("TIME_SERIES_DAILY no devolvió una serie utilizable")
         ficha = ficha_desde_serie_diaria(ticker, serie)
+        ficha["canal_datos"] = "MCP"
         return ficha, herramientas
-    except Exception as error:                     # MCP caído, cuota agotada o JSON inválido
-        return ficha_demo(ticker, f"MCP no disponible: {type(error).__name__}"), []
+    except Exception as error_mcp:                 # MCP caído o salida no utilizable
+        try:
+            ficha = ficha_desde_serie_diaria(ticker, consultar_serie_diaria_rest(ticker))
+            ficha["fuente"] = (
+                "Alpha Vantage TIME_SERIES_DAILY compact vía REST "
+                "(datos gratuitos; respaldo del MCP)"
+            )
+            ficha["canal_datos"] = "REST"
+            return ficha, herramientas
+        except Exception as error_rest:            # cuota agotada, llave inválida o red caída
+            motivo = (
+                f"MCP no disponible: {type(error_mcp).__name__}; "
+                f"REST no disponible: {type(error_rest).__name__}"
+            )
+            return ficha_demo(ticker, motivo), herramientas
 
 
 # ----------------------------------------------------------------------

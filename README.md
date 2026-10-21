@@ -74,6 +74,7 @@ Nunca las escribas en el código ni las subas a GitHub.
 - El bot **falla de forma cerrada**: sin `TELEGRAM_CHAT_ID`, ningún chat puede ejecutar análisis.
 - Los chats no autorizados se ignoran en silencio y los errores nunca muestran el token de Telegram.
 - OpenAI solo puede descubrir `TIME_SERIES_DAILY` en el MCP oficial de Alpha Vantage. Se usa `outputsize=compact`, disponible con llave gratuita, para recuperar hasta 100 sesiones OHLCV y calcular localmente SMA 20/50, RSI 14, retorno, volatilidad, volumen relativo y rango de 100 sesiones.
+- Si el MCP no entrega una serie utilizable, Iris consulta el mismo endpoint gratuito directamente por HTTPS con `ALPHAVANTAGE_API_KEY`; nunca expone la llave ni cambia de proveedor.
 - El resultado usa el último cierre diario histórico disponible; no se presenta como precio en tiempo real. `COMPANY_OVERVIEW`, noticias y cotizaciones estadounidenses en tiempo real no se usan porque Alpha Vantage las marca actualmente como premium.
 - Las GitHub Actions están fijadas a commits inmutables y solo los pasos Python necesarios reciben Secrets.
 - `requirements.lock` conserva las versiones probadas; Dependabot propone actualizaciones semanales revisables.
